@@ -1,3 +1,4 @@
+#include <interpow/interpow.h>
 #include <msp430.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,22 +6,36 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "fann.h"
+#include "../fann/inc/config.h"
+
 #include "thyroid_test.h"
 #include "profiler.h"
 /*Intermittent Tester*/
 #include <tester.h>
 #include <noise.h>
 
+#define PROFILE
+//#define DEBUG
+
+#pragma PERSISTENT(ann_mem)
+/* Fann structure. */
+struct fann ann_mem;
+
+//
+//enum fann_activationfunc_enum fann_activationfunc_enum_arr[cascade_activation_functions_count_COUNT];
+//fann_type cascade_activation_steepnesses_arr[cascade_activation_steepnesses_count_COUNT];
+/*
+ *******************************************************************************
+ * Task functions declaration
+ *******************************************************************************
+ */
+void init_main_mine();
+
 /* Debug variable. */
 fann_type *calc_out;
-static char string[] = "Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! \n";
+//static char string[] = "Hello! Hello! Hello! Hello! Hello! Hello! Hello! Hello! \n";
 
-/**
- * main.c
- */
-int main(void)
-{
+static void init_main_mine(){
     /* Stop watchdog timer. */
     WDTCTL = WDTPW | WDTHOLD;
 
@@ -40,10 +55,22 @@ int main(void)
     /*Power load simulation*/
     /* You need to use these statements in the beginning your intermittent program*/
     //tester_autoreset(0, noise_3, 0);
+    #if DEBUG_BOARD
     tester_notify_start();
+    #endif
+}
 
-    /* Fann structure. */
-    struct fann *ann;
+/**
+ * main.c
+ */
+int main(void)
+{
+
+    init_main_mine();
+   /* while(1) {
+        Resume();
+    }*/
+
 
     uint32_t clk_cycles = 0;
     uint16_t i;
@@ -52,12 +79,10 @@ int main(void)
     /* Start counting clock cycles. */
     profiler_start();
 #endif // PROFILE
-
+    //printf("ANN initialisation:\n");
     /* Create network and read training data. */
-    ann = fann_create_from_header();
-    if (!ann) {
-        return -1;
-    }
+    fann_create_from_header();
+
 
 #ifdef PROFILE
     /* Stop counting clock cycles. */
@@ -71,7 +96,7 @@ int main(void)
 #endif // PROFILE
 
     /* Reset Mean Square Error. */
-    fann_reset_MSE(ann);
+    //fann_reset_MSE(ann);
 
 #ifdef PROFILE
     /* Start counting clock cycles. */
@@ -80,7 +105,7 @@ int main(void)
 
     /* Run tests. */
     for (i = 0; i < num_data; i++) {
-        calc_out = fann_test(ann, input[i], output[i]);
+        calc_out = fann_test(&ann_mem, input[i], output[i]);
 #ifdef DEBUG
         /* Print results and errors (very expensive operations). */
         printf("Test %u:\n"
@@ -114,10 +139,10 @@ int main(void)
 #endif // PROFILE
 
     /* Print error. */
-    printf("MSE error on %d test data: %f\n\n", num_data, fann_get_MSE(ann));
+    printf("MSE error on %d test data: %f\n\n", num_data, fann_get_MSE(&ann_mem));
 
     /* Clean-up. */
-    fann_destroy(ann);
+    //fann_destroy(ann);
 
     __no_operation();
 
