@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #ifndef __fann_io_h__
 #define __fann_io_h__
 	
-FANN_EXTERNAL struct fann *FANN_API fann_create_from_header();
+FANN_EXTERNAL void FANN_API fann_create_from_header();
 
 
 /* Section: FANN File Input/Output 
@@ -39,7 +39,7 @@ FANN_EXTERNAL struct fann *FANN_API fann_create_from_header();
    	
    This function appears in FANN >= 1.0.0.
  */
-FANN_EXTERNAL struct fann *FANN_API fann_create_from_file(const char *configuration_file);
+FANN_EXTERNAL void FANN_API fann_create_from_file(const char *configuration_file);
 
 
 /* Function: fann_save

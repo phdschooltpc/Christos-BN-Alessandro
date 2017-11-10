@@ -93,10 +93,7 @@ struct fann *fann_allocate_structure(unsigned int num_layers)
     ann->cascade_min_cand_epochs = 50;
     ann->cascade_candidate_scores = NULL;
     ann->cascade_activation_functions_count = 10;
-    ann->cascade_activation_functions = (enum fann_activationfunc_enum *) calloc(
-        ann->cascade_activation_functions_count,
-        sizeof(enum fann_activationfunc_enum)
-    );
+    ann->cascade_activation_functions = NULL;
     if (ann->cascade_activation_functions == NULL) {
         //fann_error(NULL, FANN_E_CANT_ALLOCATE_MEM);
         free(ann);
@@ -115,10 +112,7 @@ struct fann *fann_allocate_structure(unsigned int num_layers)
     ann->cascade_activation_functions[9] = FANN_COS;
 
     ann->cascade_activation_steepnesses_count = 4;
-    ann->cascade_activation_steepnesses = (fann_type *) calloc(
-        ann->cascade_activation_steepnesses_count,
-        sizeof(fann_type)
-    );
+    ann->cascade_activation_steepnesses = NULL;
     if (ann->cascade_activation_steepnesses == NULL) {
         fann_safe_free(ann->cascade_activation_functions);
         //fann_error(NULL, FANN_E_CANT_ALLOCATE_MEM);
@@ -157,7 +151,7 @@ struct fann *fann_allocate_structure(unsigned int num_layers)
     unsigned int multiplier = 1 << decimal_point;
 
     /* allocate room for the layers */
-    ann->first_layer = (struct fann_layer *) calloc(num_layers, sizeof(struct fann_layer));
+    ann->first_layer = NULL;
     if(ann->first_layer == NULL) {
         //fann_error(NULL, FANN_E_CANT_ALLOCATE_MEM);
         free(ann);

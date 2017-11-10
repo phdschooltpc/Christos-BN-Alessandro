@@ -28,7 +28,7 @@
 #pragma PERSISTENT(ann_layers)
 #pragma PERSISTENT(ann_conn)
 
-fann_type ann_out[NUM_NEURONS];
+fann_type ann_out[NUM_NEURONS]={0};
 
 const enum fann_activationfunc_enum cascade_activation_functions[CASCADE_ACTIVATION_FUNCTIONS_COUNT]= {
     CASCADE_ACTIVATION_FUNCTION_1,
@@ -50,11 +50,11 @@ const fann_type cascade_activation_steepnesses[CASCADE_ACTIVATION_STEEPNESSES_CO
     CASCADE_ACTIVATION_STEEPNESS_4
 };
 
-fann_type weights[TOT_CONNECTIONS];
+fann_type weights[TOT_CONNECTIONS]={0};
 
-struct fann_neuron ann_neurons[NUM_NEURONS];
-struct fann_layer ann_layers[NUM_LAYERS];
-struct fann_neuron *ann_conn[TOT_CONNECTIONS];
+struct fann_neuron ann_neurons[NUM_NEURONS]={0};
+struct fann_layer ann_layers[NUM_LAYERS]={0};
+struct fann_neuron *ann_conn[TOT_CONNECTIONS]={0};
 /**
  * INTERNAL FUNCTION
  *
@@ -62,68 +62,68 @@ struct fann_neuron *ann_conn[TOT_CONNECTIONS];
  * database/<example>_trained.h
  * where <example> is the subject example (e.g. xor, thyroid, etc.)
  */
-struct fann *fann_create_msp430()
+void fann_create_msp430()
 {
 
 
 
     /* Allocate network. */
-    struct fann *ann = &ann_mem;
+    //struct fann *ann = &ann_mem;
     uint8_t input_neuron;
+    #pragma PERSISTENT(i)
     uint8_t i;
-
+#pragma PERSISTENT(num_connections)
+#pragma PERSISTENT(tmp_val)
+    uint8_t num_connections;
+    uint8_t tmp_val;
 
     struct fann_neuron *first_neuron, *neuron_it, *last_neuron, **connected_neurons;
 
     /* Assign parameters. */
 
-    ann->learning_rate = LEARNING_RATE;
-    ann->connection_rate = CONNECTION_RATE;
+    ann_mem.learning_rate = LEARNING_RATE;
+    ann_mem.connection_rate = CONNECTION_RATE;
 
-    ann->network_type = (enum fann_nettype_enum) NETWORK_TYPE;
-    ann->learning_momentum = LEARNING_MOMENTUM;
-    ann->training_algorithm = (enum fann_train_enum) TRAINING_ALGORITHM;
-    ann->train_error_function = (enum fann_errorfunc_enum) TRAIN_ERROR_FUNCTION;
-    ann->train_stop_function = (enum fann_stopfunc_enum) TRAIN_STOP_FUNCTION;
+    ann_mem.network_type = (enum fann_nettype_enum) NETWORK_TYPE;
+    ann_mem.learning_momentum = LEARNING_MOMENTUM;
+    ann_mem.training_algorithm = (enum fann_train_enum) TRAINING_ALGORITHM;
+    ann_mem.train_error_function = (enum fann_errorfunc_enum) TRAIN_ERROR_FUNCTION;
+    ann_mem.train_stop_function = (enum fann_stopfunc_enum) TRAIN_STOP_FUNCTION;
 
-    ann->cascade_output_change_fraction = CASCADE_OUTPUT_CHANGE_FRACTION;
-    ann->quickprop_decay = QUICKPROP_DECAY;
-    ann->quickprop_mu = QUICKPROP_MU;
-    ann->rprop_increase_factor = RPROP_INCREASE_FACTOR;
-    ann->rprop_decrease_factor = RPROP_DECREASE_FACTOR;
-    ann->rprop_delta_min = RPROP_DELTA_MIN;
-    ann->rprop_delta_max = RPROP_DELTA_MAX;
-    ann->rprop_delta_zero = RPROP_DELTA_ZERO;
-    ann->cascade_output_stagnation_epochs = CASCADE_OUTPUT_STAGNATION_EPOCHS;
-    ann->cascade_candidate_change_fraction = CASCADE_CANDIDATE_CHANGE_FRACTION;
-    ann->cascade_candidate_stagnation_epochs = CASCADE_CANDIDATE_STAGNATION_EPOCHS;
-    ann->cascade_max_out_epochs = CASCADE_MAX_OUT_EPOCHS;
-    ann->cascade_min_out_epochs = CASCADE_MIN_OUT_EPOCHS;
-    ann->cascade_max_cand_epochs = CASCADE_MAX_CAND_EPOCHS;
-    ann->cascade_min_cand_epochs = CASCADE_MIN_CAND_EPOCHS;
-    ann->cascade_num_candidate_groups = CASCADE_NUM_CANDIDATE_GROUPS;
-    ann->bit_fail_limit = BIT_FAIL_LIMIT;
-    ann->cascade_candidate_limit = CASCADE_CANDIDATE_LIMIT;
-    ann->cascade_weight_multiplier = CASCADE_WEIGHT_MULTIPLIER;
+    ann_mem.cascade_output_change_fraction = CASCADE_OUTPUT_CHANGE_FRACTION;
+    ann_mem.quickprop_decay = QUICKPROP_DECAY;
+    ann_mem.quickprop_mu = QUICKPROP_MU;
+    ann_mem.rprop_increase_factor = RPROP_INCREASE_FACTOR;
+    ann_mem.rprop_decrease_factor = RPROP_DECREASE_FACTOR;
+    ann_mem.rprop_delta_min = RPROP_DELTA_MIN;
+    ann_mem.rprop_delta_max = RPROP_DELTA_MAX;
+    ann_mem.rprop_delta_zero = RPROP_DELTA_ZERO;
+    ann_mem.cascade_output_stagnation_epochs = CASCADE_OUTPUT_STAGNATION_EPOCHS;
+    ann_mem.cascade_candidate_change_fraction = CASCADE_CANDIDATE_CHANGE_FRACTION;
+    ann_mem.cascade_candidate_stagnation_epochs = CASCADE_CANDIDATE_STAGNATION_EPOCHS;
+    ann_mem.cascade_max_out_epochs = CASCADE_MAX_OUT_EPOCHS;
+    ann_mem.cascade_min_out_epochs = CASCADE_MIN_OUT_EPOCHS;
+    ann_mem.cascade_max_cand_epochs = CASCADE_MAX_CAND_EPOCHS;
+    ann_mem.cascade_min_cand_epochs = CASCADE_MIN_CAND_EPOCHS;
+    ann_mem.cascade_num_candidate_groups = CASCADE_NUM_CANDIDATE_GROUPS;
+    ann_mem.bit_fail_limit = BIT_FAIL_LIMIT;
+    ann_mem.cascade_candidate_limit = CASCADE_CANDIDATE_LIMIT;
+    ann_mem.cascade_weight_multiplier = CASCADE_WEIGHT_MULTIPLIER;
 
-    ann->cascade_activation_functions_count = CASCADE_ACTIVATION_FUNCTIONS_COUNT;
+    ann_mem.cascade_activation_functions_count = CASCADE_ACTIVATION_FUNCTIONS_COUNT;
     // WARNING: dynamic allocation!
-    ann->cascade_activation_functions = cascade_activation_functions;
-    if (ann->cascade_activation_functions == NULL) {
-        // fann_error((struct fann_error*)ann, FANN_E_CANT_ALLOCATE_MEM);
-        //fann_destroy(ann);
-        return NULL;
-    }
+    ann_mem.cascade_activation_functions = cascade_activation_functions;
+
 
 #ifdef DEBUG_MALLOC
     //printf("Re-allocated %u bytes for activation functions.\n",
-    //        ann->cascade_activation_functions_count * sizeof(enum fann_activationfunc_enum));
+    //        ann_mem.cascade_activation_functions_count * sizeof(enum fann_activationfunc_enum));
 #endif // DEBUG_MALLOC
 
 
-    ann->cascade_activation_steepnesses_count = CASCADE_ACTIVATION_STEEPNESSES_COUNT;
+    ann_mem.cascade_activation_steepnesses_count = CASCADE_ACTIVATION_STEEPNESSES_COUNT;
     // WARNING: for
-    ann->cascade_activation_steepnesses = cascade_activation_steepnesses;
+    ann_mem.cascade_activation_steepnesses = cascade_activation_steepnesses;
 
 #ifdef FIXEDFANN
     fann_update_stepwise(ann);
@@ -134,26 +134,26 @@ struct fann *fann_create_msp430()
     printf("Input\n");
 #endif // DEBUG
 
-    ann->first_layer = &ann_layers[0];
-    ann->last_layer = &ann_layers[NUM_LAYERS-1];
+    ann_mem.first_layer = &ann_layers[0];
+    ann_mem.last_layer = &ann_layers[NUM_LAYERS-1];
 
-    ann->first_layer->first_neuron=(void *)&ann_neurons[0];
-    ann->first_layer->last_neuron=(void *)&ann_neurons[LAYER_SIZE_1-1];
-    ann->last_layer->first_neuron=(void *)&ann_neurons[NUM_NEURONS-LAYER_SIZE_3-1];
-    ann->last_layer->last_neuron=(void *)&ann_neurons[NUM_NEURONS-1];
+    ann_mem.first_layer->first_neuron=(void *)&ann_neurons[0];
+    ann_mem.first_layer->last_neuron=(void *)&ann_neurons[LAYER_SIZE_1-1];
+    ann_mem.last_layer->first_neuron=(void *)&ann_neurons[NUM_NEURONS-LAYER_SIZE_3-1];
+    ann_mem.last_layer->last_neuron=(void *)&ann_neurons[NUM_NEURONS-1];
 
-    ann->total_neurons = NUM_NEURONS;
+    ann_mem.total_neurons = NUM_NEURONS;
 
 
 
-    ann->num_input = (unsigned int) (ann->first_layer->last_neuron - ann->first_layer->first_neuron - 1);
-    ann->num_output = (unsigned int) ((ann->last_layer - 1)->last_neuron - (ann->last_layer - 1)->first_neuron);
-    ann->output = ann_out;
-    ann->total_neurons_allocated = ann->total_neurons;
+    ann_mem.num_input = (unsigned int) (ann_mem.first_layer->last_neuron - ann_mem.first_layer->first_neuron - 1);
+    ann_mem.num_output = (unsigned int) ((ann_mem.last_layer - 1)->last_neuron - (ann_mem.last_layer - 1)->first_neuron);
+    ann_mem.output = ann_out;
+    ann_mem.total_neurons_allocated = ann_mem.total_neurons;
 
-    if (ann->network_type == FANN_NETTYPE_LAYER) {
+    if (ann_mem.network_type == FANN_NETTYPE_LAYER) {
         // One too many (bias) in the output layer
-        ann->num_output--;
+        ann_mem.num_output--;
     }
 
     // TODO: redundant on example case, fix for portability
@@ -161,8 +161,8 @@ struct fann *fann_create_msp430()
 #ifndef FIXEDFANN
 #define SCALE_LOAD( what, where ) \
     fann_skip( #what "_" #where "=" ); \
-    for (i = 0; i < ann->num_##where##put; i++) { \
-        if (fscanf( conf, "%f ", (float *)&ann->what##_##where[ i ] ) != 1) { \
+    for (i = 0; i < ann_mem.num_##where##put; i++) { \
+        if (fscanf( conf, "%f ", (float *)&ann_mem.what##_##where[ i ] ) != 1) { \
             fann_error((struct fann_error *) ann, FANN_E_CANT_READ_CONFIG, #what "_" #where, configuration_file); \
             fann_destroy(ann); \
             return NULL; \
@@ -189,43 +189,40 @@ struct fann *fann_create_msp430()
     //fann_allocate_neurons(ann);
 
 
-    last_neuron = (ann->last_layer - 1)->last_neuron;
-    for (neuron_it = ann->first_layer->first_neuron; neuron_it != last_neuron; neuron_it++) {
-        //num_connections = neurons[i][0];
+    last_neuron = (ann_mem.last_layer - 1)->last_neuron;
+    for (neuron_it = ann_mem.first_layer->first_neuron; neuron_it != last_neuron; neuron_it++) {
+        num_connections = neurons[i][0];
         neuron_it->activation_steepness = neurons[i][2];
-        neuron_it->activation_function = (enum fann_activationfunc_enum) neurons[i][1];//tmp_val;
-        neuron_it->first_con = ann->total_connections;
-        ann->total_connections += neurons[i][0];//num_connections;
-        neuron_it->last_con = ann->total_connections;
+        tmp_val = (enum fann_activationfunc_enum) neurons[i][1];
         i++;
+        neuron_it->activation_function = tmp_val;
+        neuron_it->first_con = ann_mem.total_connections;
+        ann_mem.total_connections += num_connections;
+        neuron_it->last_con = ann_mem.total_connections;
+
     }
 
-    ann->weights = weights;
-    ann->total_connections = TOT_CONNECTIONS;
-    ann->connections = ann_conn;
-    ann->total_connections_allocated = ann->total_connections;
+    ann_mem.weights = weights;
+    ann_mem.total_connections = TOT_CONNECTIONS;
+    ann_mem.connections = ann_conn;
+    ann_mem.total_connections_allocated = ann_mem.total_connections;
 
-    connected_neurons = ann->connections;
-    first_neuron = ann->first_layer->first_neuron;
+    connected_neurons = ann_mem.connections;
+    first_neuron = ann_mem.first_layer->first_neuron;
 
-    for (i = 0; i < ann->total_connections; i++) {
+    for (i = 0; i < ann_mem.total_connections; i++) {
         input_neuron = connections[i][0];
-        ann->weights[i] = connections[i][1];
+        ann_mem.weights[i] = connections[i][1];
         connected_neurons[i] = first_neuron + input_neuron;
     }
 
-    return ann;
 }
 
 
 /**
  * Create network from header file.
  */
-FANN_EXTERNAL struct fann *FANN_API fann_create_from_header()
+FANN_EXTERNAL void FANN_API fann_create_from_header()
 {
-    struct fann *ann;
-
-    ann = fann_create_msp430();
-
-    return ann;
+    fann_create_msp430();
 }
