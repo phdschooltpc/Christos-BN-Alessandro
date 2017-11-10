@@ -65,15 +65,22 @@ static void init_main_mine(){
  */
 int main(void)
 {
+#pragma PERSISTENT(task)
+static uint8_t task=0;
+uint32_t clk_cycles = 0;
+uint16_t i=0;
+
+switch(task){
+case 0:
 
     init_main_mine();
    /* while(1) {
         Resume();
     }*/
 
+    task=1;
+    case 1:
 
-    uint32_t clk_cycles = 0;
-    uint16_t i;
 
 #ifdef PROFILE
     /* Start counting clock cycles. */
@@ -95,6 +102,8 @@ int main(void)
            clk_cycles, (float) clk_cycles / 8000);
 #endif // PROFILE
 
+    task=2;
+    case 2:
     /* Reset Mean Square Error. */
     //fann_reset_MSE(ann);
 
@@ -104,7 +113,7 @@ int main(void)
 #endif // PROFILE
 
     /* Run tests. */
-    for (i = 0; i < num_data; i++) {
+    for (i;i < num_data; i++) {
         calc_out = fann_test(&ann_mem, input[i], output[i]);
 #ifdef DEBUG
         /* Print results and errors (very expensive operations). */
@@ -138,6 +147,9 @@ int main(void)
            (float) clk_cycles / 8000, (float) clk_cycles / 8000 / i);
 #endif // PROFILE
 
+    task=3;
+
+    case 3:
     /* Print error. */
     printf("MSE error on %d test data: %f\n\n", num_data, fann_get_MSE(&ann_mem));
 
@@ -153,6 +165,6 @@ int main(void)
     /* Turn on LED: Use for debugging */
 
     P1OUT |= BIT0;
-
+}
     return 0;
 }

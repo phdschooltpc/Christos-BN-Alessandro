@@ -71,16 +71,28 @@ void fann_create_msp430()
     //struct fann *ann = &ann_mem;
     uint8_t input_neuron;
     #pragma PERSISTENT(i)
-    uint8_t i;
+    #pragma PERSISTENT(task)
+    static uint8_t i=0, task=0;
 #pragma PERSISTENT(num_connections)
 #pragma PERSISTENT(tmp_val)
     uint8_t num_connections;
     uint8_t tmp_val;
+    unsigned int num_neurons = 0, num_neurons_so_far = 0;
 
     struct fann_neuron *first_neuron, *neuron_it, *last_neuron, **connected_neurons;
-
+    /* Layer Sizes. */
+    uint8_t layer_size_store[] = {
+        LAYER_SIZE_1,
+        LAYER_SIZE_2,
+        LAYER_SIZE_3
+    };
+    uint8_t layer_size;
+    struct fann_layer *layer_it;
     /* Assign parameters. */
 
+    switch(task){
+
+    case 0:
     ann_mem.learning_rate = LEARNING_RATE;
     ann_mem.connection_rate = CONNECTION_RATE;
 
@@ -136,15 +148,9 @@ void fann_create_msp430()
 
     ann_mem.first_layer = &ann_layers[0];
     ann_mem.last_layer = &ann_layers[NUM_LAYERS-1];
+    task = 1;
+    case 1:
 
-    /* Layer Sizes. */
-    uint8_t layer_size_store[] = {
-        LAYER_SIZE_1,
-        LAYER_SIZE_2,
-        LAYER_SIZE_3
-    };
-    uint8_t layer_size;
-    struct fann_layer *layer_it;
     ann_mem.total_connections = 0;
     ann_mem.total_neurons = 0;
     i = 0;
@@ -161,7 +167,8 @@ void fann_create_msp430()
 
     }
 
-    unsigned int num_neurons = 0, num_neurons_so_far = 0;
+    task = 2;
+    case 2:
     for (layer_it = ann_mem.first_layer; layer_it != ann_mem.last_layer; layer_it++) {
         num_neurons = (unsigned int) (layer_it->last_neuron - layer_it->first_neuron);
         layer_it->first_neuron = ann_neurons + num_neurons_so_far;
@@ -192,6 +199,8 @@ void fann_create_msp430()
     ann_mem.num_input = (unsigned int) (ann_mem.first_layer->last_neuron - ann_mem.first_layer->first_neuron - 1);
     ann_mem.num_output = (unsigned int) ((ann_mem.last_layer - 1)->last_neuron - (ann_mem.last_layer - 1)->first_neuron);
 
+    task = 3;
+    case 3:
     last_neuron = (ann_mem.last_layer-1)->last_neuron;
     for (neuron_it = ann_mem.first_layer->first_neuron; neuron_it != last_neuron; neuron_it++) {
         num_connections = neurons[i][0];
@@ -244,7 +253,8 @@ void fann_create_msp430()
 
     // WARNING: dynamic allocation!
     //fann_allocate_neurons(ann);
-
+    task = 4;
+    case 4:
     ann_mem.weights = weights;
     ann_mem.total_connections = TOT_CONNECTIONS;
     ann_mem.connections = ann_conn;
@@ -258,6 +268,8 @@ void fann_create_msp430()
         ann_mem.weights[i] = connections[i][1];
         connected_neurons[i] = first_neuron + input_neuron;
     }
+    task=5;
+}
 
 }
 
