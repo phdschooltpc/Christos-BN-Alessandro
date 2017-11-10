@@ -137,17 +137,62 @@ void fann_create_msp430()
     ann_mem.first_layer = &ann_layers[0];
     ann_mem.last_layer = &ann_layers[NUM_LAYERS-1];
 
+    /* Layer Sizes. */
+    uint8_t layer_size_store[] = {
+        LAYER_SIZE_1,
+        LAYER_SIZE_2,
+        LAYER_SIZE_3
+    };
+    uint8_t layer_size;
+    struct fann_layer *layer_it;
+    ann_mem.total_connections = 0;
+    ann_mem.total_neurons = 0;
+    i = 0;
+    for (layer_it = ann_mem.first_layer; layer_it != ann_mem.last_layer; layer_it++)
+    {
+
+        layer_size = layer_size_store[i++];
+
+        //layer_it->first_neuron = (void *)&ann_neurons[ann_mem.total_neurons]; //NULL
+        layer_it->first_neuron = NULL;
+
+        layer_it->last_neuron = layer_it->first_neuron + layer_size;
+        ann_mem.total_neurons += layer_size;
+
+    }
+
+    unsigned int num_neurons = 0, num_neurons_so_far = 0;
+    for (layer_it = ann_mem.first_layer; layer_it != ann_mem.last_layer; layer_it++) {
+        num_neurons = (unsigned int) (layer_it->last_neuron - layer_it->first_neuron);
+        layer_it->first_neuron = ann_neurons + num_neurons_so_far;
+        layer_it->last_neuron = layer_it->first_neuron + num_neurons;
+        num_neurons_so_far += num_neurons;
+    }
+
+    /*ann_mem.first_layer->first_neuron=(void *)&ann_neurons[0];
+    ann_mem.first_layer->last_neuron=ann_mem.first_layer->first_neuron + LAYER_SIZE_1;
+    (ann_mem.last_layer-1)->first_neuron=(void *)&ann_neurons[LAYER_SIZE_1];
+    (ann_mem.last_layer-1)->last_neuron=(void *)&ann_neurons[LAYER_SIZE_1+LAYER_SIZE_2];
+    ann_mem.last_layer->first_neuron=(void *)&ann_neurons[LAYER_SIZE_1+LAYER_SIZE_2];
+    ann_mem.last_layer->last_neuron=(void *)&ann_neurons[NUM_NEURONS];
+
+
+
+    ann_mem.total_neurons = NUM_NEURONS;*
+/*
     ann_mem.first_layer->first_neuron=(void *)&ann_neurons[0];
-    ann_mem.first_layer->last_neuron=(void *)&ann_neurons[LAYER_SIZE_1-1];
-    ann_mem.last_layer->first_neuron=(void *)&ann_neurons[NUM_NEURONS-LAYER_SIZE_3-1];
+    ann_mem.first_layer->last_neuron=(void *)&ann_neurons[LAYER_SIZE_1];
+    ann_mem.last_layer->first_neuron=(void *)&ann_neurons[NUM_NEURONS-LAYER_SIZE_3];
     ann_mem.last_layer->last_neuron=(void *)&ann_neurons[NUM_NEURONS-1];
 
-    (ann_mem.last_layer-1)->first_neuron=(void *)&ann_neurons[LAYER_SIZE_1];
-    (ann_mem.last_layer-1)->last_neuron=(void *)&ann_neurons[LAYER_SIZE_1+LAYER_SIZE_2-1];
+    (ann_mem.last_layer-1)->first_neuron=(void *)&ann_neurons[LAYER_SIZE_1+1];
+    (ann_mem.last_layer-1)->last_neuron=(void *)&ann_neurons[LAYER_SIZE_1+LAYER_SIZE_2+1];
 
-    ann_mem.total_neurons = NUM_NEURONS;
+    ann_mem.total_neurons = NUM_NEURONS;*/
+    ann_mem.num_input = (unsigned int) (ann_mem.first_layer->last_neuron - ann_mem.first_layer->first_neuron - 1);
+    ann_mem.num_output = (unsigned int) ((ann_mem.last_layer - 1)->last_neuron - (ann_mem.last_layer - 1)->first_neuron);
 
-    last_neuron = (ann_mem.last_layer)->last_neuron;
+    last_neuron = (ann_mem.last_layer-1)->last_neuron;
     for (neuron_it = ann_mem.first_layer->first_neuron; neuron_it != last_neuron; neuron_it++) {
         num_connections = neurons[i][0];
         neuron_it->activation_steepness = neurons[i][2];
@@ -160,8 +205,6 @@ void fann_create_msp430()
 
     }
 
-    ann_mem.num_input = (unsigned int) (ann_mem.first_layer->last_neuron - ann_mem.first_layer->first_neuron - 1);
-    ann_mem.num_output = (unsigned int) ((ann_mem.last_layer - 1)->last_neuron - (ann_mem.last_layer - 1)->first_neuron);
     ann_mem.output = ann_out;
     ann_mem.total_neurons_allocated = ann_mem.total_neurons;
 
