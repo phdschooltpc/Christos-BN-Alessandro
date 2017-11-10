@@ -142,9 +142,23 @@ void fann_create_msp430()
     ann_mem.last_layer->first_neuron=(void *)&ann_neurons[NUM_NEURONS-LAYER_SIZE_3-1];
     ann_mem.last_layer->last_neuron=(void *)&ann_neurons[NUM_NEURONS-1];
 
+    (ann_mem.last_layer-1)->first_neuron=(void *)&ann_neurons[LAYER_SIZE_1];
+    (ann_mem.last_layer-1)->last_neuron=(void *)&ann_neurons[LAYER_SIZE_1+LAYER_SIZE_2-1];
+
     ann_mem.total_neurons = NUM_NEURONS;
 
+    last_neuron = (ann_mem.last_layer)->last_neuron;
+    for (neuron_it = ann_mem.first_layer->first_neuron; neuron_it != last_neuron; neuron_it++) {
+        num_connections = neurons[i][0];
+        neuron_it->activation_steepness = neurons[i][2];
+        tmp_val = (enum fann_activationfunc_enum) neurons[i][1];
+        i++;
+        neuron_it->activation_function = tmp_val;
+        neuron_it->first_con = ann_mem.total_connections;
+        ann_mem.total_connections += num_connections;
+        neuron_it->last_con = ann_mem.total_connections;
 
+    }
 
     ann_mem.num_input = (unsigned int) (ann_mem.first_layer->last_neuron - ann_mem.first_layer->first_neuron - 1);
     ann_mem.num_output = (unsigned int) ((ann_mem.last_layer - 1)->last_neuron - (ann_mem.last_layer - 1)->first_neuron);
@@ -187,20 +201,6 @@ void fann_create_msp430()
 
     // WARNING: dynamic allocation!
     //fann_allocate_neurons(ann);
-
-
-    last_neuron = (ann_mem.last_layer)->last_neuron;
-    for (neuron_it = ann_mem.first_layer->first_neuron; neuron_it != last_neuron; neuron_it++) {
-        num_connections = neurons[i][0];
-        neuron_it->activation_steepness = neurons[i][2];
-        tmp_val = (enum fann_activationfunc_enum) neurons[i][1];
-        i++;
-        neuron_it->activation_function = tmp_val;
-        neuron_it->first_con = ann_mem.total_connections;
-        ann_mem.total_connections += num_connections;
-        neuron_it->last_con = ann_mem.total_connections;
-
-    }
 
     ann_mem.weights = weights;
     ann_mem.total_connections = TOT_CONNECTIONS;

@@ -15,7 +15,7 @@
 #include <noise.h>
 
 #define PROFILE
-#define DEBUG
+//#define DEBUG
 
 #pragma PERSISTENT(ann_mem)
 /* Fann structure. */
