@@ -189,7 +189,7 @@ void fann_create_msp430()
     //fann_allocate_neurons(ann);
 
 
-    last_neuron = (ann_mem.last_layer - 1)->last_neuron;
+    last_neuron = (ann_mem.last_layer)->last_neuron;
     for (neuron_it = ann_mem.first_layer->first_neuron; neuron_it != last_neuron; neuron_it++) {
         num_connections = neurons[i][0];
         neuron_it->activation_steepness = neurons[i][2];

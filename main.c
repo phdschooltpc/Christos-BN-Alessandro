@@ -79,7 +79,7 @@ int main(void)
     /* Start counting clock cycles. */
     profiler_start();
 #endif // PROFILE
-    printf("ANN initialisation:\n");
+    //printf("ANN initialisation:\n");
     /* Create network and read training data. */
     fann_create_from_header();
 
